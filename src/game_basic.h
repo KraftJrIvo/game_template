@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
+#include <iostream>
 
 #include "game.h"
+#include "raylib.h"
 
 #if (defined(_WIN32) || defined(_WIN64)) && defined(GAME_BASE_DLL)
 #define DLL_EXPORT __declspec(dllexport)
@@ -57,19 +59,37 @@ inline std::string prepShader(unsigned char* shaderBytes) {
 inline void setStuff(const GameAssets* ga, GameState& gs, RenderTexture* rt = NULL) {
     gs.ga.p = ga;
     loadUserData(gs);
-    gs.tmp.renderTex = (rt && IsRenderTextureValid(*rt)) ? *rt : LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-    SetTextureWrap(gs.tmp.renderTex.texture, TEXTURE_WRAP_CLAMP);
+    gs.tmp.renderTexNative = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
+    gs.tmp.renderTexFinal = (rt && IsRenderTextureValid(*rt)) ? 
+        *rt : 
+        LoadRenderTexture(gs.tmp.renderTexNative.texture.width, gs.tmp.renderTexNative.texture.height);
+    SetTextureWrap(gs.tmp.renderTexFinal.texture, TEXTURE_WRAP_CLAMP);
 }
 
-inline void render(GameState& gs) {
+inline void renderPreUI(GameState& gs) {
     gs.tmp.shTime = getTime(gs);
     SetShaderValue(gs.ga.p->postProcFragShader, GetShaderLocation(gs.ga.p->postProcFragShader, "time"), &gs.tmp.shTime, SHADER_UNIFORM_FLOAT);
-
-    BeginDrawing();
-    if (IsRenderTextureValid(gs.tmp.renderTex)) {
+    
+    BeginTextureMode(gs.tmp.renderTexFinal);
+    if (IsRenderTextureValid(gs.tmp.renderTexNative)) {
         BeginShaderMode(gs.ga.p->postProcFragShader);
-        DrawTextureRec(gs.tmp.renderTex.texture, Rectangle{0, 0, (float)gs.tmp.renderTex.texture.width, (float)-gs.tmp.renderTex.texture.height}, Vector2Zero(), WHITE);
+        DrawTextureRec(gs.tmp.renderTexNative.texture, Rectangle{0, 0, (float)gs.tmp.renderTexNative.texture.width, (float)-gs.tmp.renderTexNative.texture.height}, Vector2Zero(), WHITE);
         EndShaderMode();
+    } else {
+        ClearBackground(BLACK);
+    }
+}
+
+inline void renderPostUI(GameState& gs) {
+    EndTextureMode();
+    BeginDrawing();
+    if (IsRenderTextureValid(gs.tmp.renderTexFinal)) {
+        float w = GAME_SCALE * gs.tmp.renderTexFinal.texture.width;
+        float h = GAME_SCALE * gs.tmp.renderTexFinal.texture.height;
+        DrawTexturePro(gs.tmp.renderTexFinal.texture, 
+            Rectangle{0, 0, (float)gs.tmp.renderTexFinal.texture.width, (float)-gs.tmp.renderTexFinal.texture.height}, 
+            {GetScreenWidth() * 0.5f - w * 0.5f, GetScreenHeight() * 0.5f - h * 0.5f, w, h}, 
+            {0,0}, 0.0f, WHITE);
     } else {
         ClearBackground(BLACK);
     }
@@ -88,7 +108,7 @@ extern "C" {
     DLL_EXPORT void setState(GameState& gs, const GameState& ngs)
     {
         const GameAssets* ga = gs.ga.p;
-        auto rt = gs.tmp.renderTex;
+        auto rt = gs.tmp.renderTexFinal;
         gs = ngs;
         setStuff(ga, gs, &rt);
     }
@@ -105,7 +125,7 @@ extern "C" {
     {
         if (!IsAudioDeviceReady()) {
             InitAudioDevice();
-        } else if (IsMusicStreamPlaying(ga.music)) {
+        } else if (IsMusicValid(ga.music) && IsMusicStreamPlaying(ga.music)) {
             StopMusicStream(ga.music);
         }
 
@@ -116,6 +136,7 @@ extern "C" {
     }
 
     void _updateAndDraw(GameState& gs);
+    void _drawUI(GameState& gs);
     DLL_EXPORT void updateAndDraw(GameState& gs)
     {
         syncTime(gs);
@@ -123,11 +144,13 @@ extern "C" {
         if (IsWindowResized())
             setStuff(gs.ga.p, gs);
 
-        BeginTextureMode(gs.tmp.renderTex);
+        BeginTextureMode(gs.tmp.renderTexNative);
         _updateAndDraw(gs);
         EndTextureMode();
 
-        render(gs);
+        renderPreUI(gs);
+        _drawUI(gs);
+        renderPostUI(gs);
 
         gs.time = GetTime();
     }

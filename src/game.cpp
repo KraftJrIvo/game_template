@@ -16,7 +16,7 @@ void _loadAssets(GameAssets& ga, GameState& gs)
     
     const char8_t allChars[228] = u8" !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
     int c; auto cdpts = LoadCodepoints((const char*)allChars, &c);
-    ga.font = LoadFontFromMemory(".otf", res_font_otf, res_font_otf_len, 39, cdpts, c);
+    ga.font = LoadFontFromMemory(".otf", res_font_otf, res_font_otf_len, 13, cdpts, c);
 
     ga.spriteSz = Vector2{100.0f, 100.0f};
 }
@@ -38,11 +38,11 @@ void _updateAndDraw(GameState& gs) {
     auto delta = GetFrameTime();
     if (delta < 0.1f) {
         gs.spritePos += gs.spriteVel * SPRITE_SPEED * GetFrameTime();
-        if (gs.spritePos.x - gs.ga.p->spriteSz.x * 0.5f < 0 || gs.spritePos.x + gs.ga.p->spriteSz.x * 0.5f > GetScreenWidth()) {
+        if (gs.spritePos.x - gs.ga.p->spriteSz.x * 0.5f < 0 || gs.spritePos.x + gs.ga.p->spriteSz.x * 0.5f > GAME_WIDTH) {
             PlaySound(gs.ga.p->sound);
             gs.spriteVel.x *= -1.0f;
         }
-        if (gs.spritePos.y - gs.ga.p->spriteSz.y * 0.5f < 0 || gs.spritePos.y + gs.ga.p->spriteSz.y * 0.5f > GetScreenHeight()) {
+        if (gs.spritePos.y - gs.ga.p->spriteSz.y * 0.5f < 0 || gs.spritePos.y + gs.ga.p->spriteSz.y * 0.5f > GAME_HEIGHT) {
             PlaySound(gs.ga.p->sound);
             gs.spriteVel.y *= -1.0f;
         }
@@ -61,5 +61,9 @@ void _updateAndDraw(GameState& gs) {
     
     ClearBackground(BLACK);
     DrawTextureV(gs.ga.p->sprite, gs.spritePos - gs.ga.p->spriteSz * 0.5f, COLORS[gs.usr.spriteColor]);
-    DrawTextEx(gs.ga.p->font, std::to_string(gs.time).c_str(), {10.0f, 10.0f}, 39, 0, WHITE);
+}
+
+void _drawUI(GameState& gs) {
+    DrawRectangleLines(0, 0, GAME_WIDTH, GAME_HEIGHT, WHITE);
+    DrawTextEx(gs.ga.p->font, std::to_string(gs.time).c_str(), {10.0f, 10.0f}, 13, 1, WHITE);
 }

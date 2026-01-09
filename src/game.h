@@ -38,7 +38,8 @@ struct GameState {
     } usr;
     struct Temp {
         DO_NOT_SERIALIZE
-        RenderTexture2D renderTex;
+        RenderTexture2D renderTexNative;
+        RenderTexture2D renderTexFinal;
         bool timeOffsetSet = false;
         double timeOffset;
         float shTime;
