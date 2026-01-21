@@ -31,12 +31,8 @@ set(GAME_SOURCE_FILES
 if (GAME_BASE_SHARED_BUILD)
   add_library(GAME_NEW SHARED ${GAME_SOURCE_FILES})
   target_include_directories(GAME_NEW PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-  target_compile_definitions(GAME_NEW PRIVATE GAME_BASE_DLL)
-  add_custom_command(TARGET GAME_NEW
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${GAME_SOURCE_FILES}/build/GAME.dll
-    COMMENT "Removing old dll"
-  )
+  target_compile_definitions(GAME_NEW PRIVATE GAME_BASE_SHARED)
+  configure_game_new_temp_publish(GAME_NEW)
 else()
   add_library(GAME ${GAME_SOURCE_FILES})
   target_include_directories(GAME PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

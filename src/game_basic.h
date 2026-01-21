@@ -5,7 +5,7 @@
 #include "game.h"
 #include "raylib.h"
 
-#if (defined(_WIN32) || defined(_WIN64)) && defined(GAME_BASE_DLL)
+#if (defined(_WIN32) || defined(_WIN64)) && defined(GAME_BASE_SHARED)
 #define DLL_EXPORT __declspec(dllexport)
 #else
 #define DLL_EXPORT
@@ -114,7 +114,7 @@ extern "C" {
     }
 
     void _reset(GameState& gs);
-    inline void reset(GameState& gs) {
+    DLL_EXPORT void reset(GameState& gs) {
         setState(gs, {0});
         gs.seed = rand() % std::numeric_limits<int>::max();
         _reset(gs);

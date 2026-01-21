@@ -5,11 +5,11 @@
 
 #include "game_cfg.h"
 
-#ifdef GAME_BASE_DLL
+#ifdef GAME_BASE_SHARED
 #include "../../src/util/zpp_bits.h"
 #endif
 
-#ifdef GAME_BASE_DLL    
+#ifdef GAME_BASE_SHARED    
 #define DO_NOT_SERIALIZE friend zpp::bits::access; using serialize = zpp::bits::members<0>;        
 #else
 #define DO_NOT_SERIALIZE ;
@@ -51,8 +51,9 @@ struct GameState {
 };
 
 
-#ifndef GAME_BASE_DLL
+#ifndef GAME_BASE_SHARED
 extern "C" {
+    void reset(GameState& gs);
     void init(GameAssets& ga, GameState& gs);
     void setState(GameState& gs, const GameState& ngs);
     void updateAndDraw(GameState& gs);
