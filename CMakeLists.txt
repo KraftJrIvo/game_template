@@ -33,9 +33,11 @@ if (GAME_BASE_SHARED_BUILD)
   target_include_directories(GAME_NEW PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
   target_compile_definitions(GAME_NEW PRIVATE GAME_BASE_SHARED)
   configure_game_new_temp_publish(GAME_NEW)
+  set(GAME_TARGET GAME_NEW)
 else()
   add_library(GAME ${GAME_SOURCE_FILES})
   target_include_directories(GAME PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+  set(GAME_TARGET GAME)
 endif()
 
 # DEPENDENCIES
@@ -65,8 +67,30 @@ target_compile_options(raylib PUBLIC -DRAYMATH_DISABLE_CPP_OPERATORS)
 target_compile_options(raylib PUBLIC -DMANUAL_INPUT_EVENTS_POLLING)
 target_compile_options(raylib PUBLIC -DGRAPHICS_API_OPENGL_33)
 
-if (GAME_BASE_SHARED_BUILD)
-  target_link_libraries(GAME_NEW PUBLIC raylib)
-else()
-  target_link_libraries(GAME PUBLIC raylib)
+target_link_libraries(${GAME_TARGET} PUBLIC raylib)
+
+set(STEAMWORKS_SDK_DIR "" CACHE PATH "Path to Steamworks SDK root")
+if (USE_STEAMWORKS AND STEAMWORKS_SDK_DIR)
+  if (WIN32)
+    set(STEAMWORKS_LIB "${STEAMWORKS_SDK_DIR}/redistributable_bin/win64/steam_api64.lib")
+  endif()
+  target_include_directories(${GAME_TARGET} PRIVATE "${STEAMWORKS_SDK_DIR}/public")
+  target_link_libraries(${GAME_TARGET} PRIVATE "${STEAMWORKS_LIB}")
+  target_compile_definitions(${GAME_TARGET} PRIVATE USE_STEAMWORKS)
+
+  if (WIN32)
+    set(STEAMWORKS_BIN "${STEAMWORKS_SDK_DIR}/redistributable_bin/win64/steam_api64.dll")
+  elseif (APPLE)
+    set(STEAMWORKS_BIN "${STEAMWORKS_SDK_DIR}/redistributable_bin/osx/libsteam_api.dylib")
+  else()
+    set(STEAMWORKS_BIN "${STEAMWORKS_SDK_DIR}/redistributable_bin/linux64/libsteam_api.so")
+  endif()
+
+  add_custom_command(TARGET ${GAME_TARGET} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${STEAMWORKS_BIN}"
+            "${CMAKE_BINARY_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E echo "480" > "${CMAKE_BINARY_DIR}/steam_appid.txt"
+    COMMENT "Copy Steamworks runtime and write steam_appid.txt next to exe"
+  )
 endif()

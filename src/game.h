@@ -4,10 +4,19 @@
 #include "raymath.h"
 
 #include "game_cfg.h"
+#include <cstddef>
+#include <string>
+
+#ifdef USE_STEAMWORKS
+#include "steam/steam_api.h"
+#include "steam/steamnetworkingtypes.h"
+#endif
 
 #ifdef GAME_BASE_SHARED
 #include "../../src/util/zpp_bits.h"
 #endif
+
+#include "util/arena.h"
 
 #ifdef GAME_BASE_SHARED    
 #define DO_NOT_SERIALIZE friend zpp::bits::access; using serialize = zpp::bits::members<0>;        
@@ -17,23 +26,26 @@
 
 struct GameAssets {
     Texture2D sprite;
-    Music music;
-    Sound sound;
-    Shader postProcFragShader;
     Font font;
-    
     Vector2 spriteSz;
+};
+
+struct Player {
+    Vector2 pos, vel; 
+    Color color;     
 };
 
 struct GameState {
     unsigned int seed;
     double time;
     double gameStartTime;
-    Vector2 spritePos, spriteVel;
+    
+    Arena<MAX_PLAYERS, Player> players;
+    size_t playerIdx;
+
     struct UserData {
         DO_NOT_SERIALIZE
         int spriteColor = 0;
-        bool musEnabled = true;
         bool operator==(const UserData&) const = default;
     } usr;
     struct Temp {
@@ -48,6 +60,17 @@ struct GameState {
         DO_NOT_SERIALIZE
         const GameAssets* p;
     } ga;
+
+#ifdef USE_STEAMWORKS
+    struct NetState {
+        DO_NOT_SERIALIZE
+        bool steamOk = false;
+        bool hasPeer = false;
+        SteamNetworkingIdentity peerIdentity;
+        size_t remoteIdx = SIZE_MAX;
+        double lastSendTime = 0.0;
+    } net;
+#endif
 };
 
 

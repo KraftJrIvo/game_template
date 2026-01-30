@@ -70,13 +70,13 @@ inline void setStuff(const GameAssets& ga, GameState& gs, RenderTexture* rt = NU
 
 inline void renderPreUI(GameState& gs) {
     gs.tmp.shTime = getTime(gs);
-    SetShaderValue(gs.ga.p->postProcFragShader, GetShaderLocation(gs.ga.p->postProcFragShader, "time"), &gs.tmp.shTime, SHADER_UNIFORM_FLOAT);
+    //SetShaderValue(gs.ga.p->postProcFragShader, GetShaderLocation(gs.ga.p->postProcFragShader, "time"), &gs.tmp.shTime, SHADER_UNIFORM_FLOAT);
     
     BeginTextureMode(gs.tmp.renderTexFinal);
     if (IsRenderTextureValid(gs.tmp.renderTexNative)) {
-        BeginShaderMode(gs.ga.p->postProcFragShader);
+        //BeginShaderMode(gs.ga.p->postProcFragShader);
         DrawTextureRec(gs.tmp.renderTexNative.texture, Rectangle{0, 0, (float)gs.tmp.renderTexNative.texture.width, (float)-gs.tmp.renderTexNative.texture.height}, Vector2Zero(), WHITE);
-        EndShaderMode();
+        //EndShaderMode();
     } else {
         ClearBackground(BLACK);
     }
@@ -126,12 +126,12 @@ extern "C" {
     {
         if (!IsAudioDeviceReady()) {
             InitAudioDevice();
-        } else if (IsMusicValid(ga.music) && IsMusicStreamPlaying(ga.music)) {
+        } /*else if (IsMusicValid(ga.music) && IsMusicStreamPlaying(ga.music)) {
             StopMusicStream(ga.music);
-        }
+        }*/
 
         loadAssets(ga, gs);
-        PlayMusicStream(ga.music);
+        //PlayMusicStream(ga.music);
 
         reset(gs);
     }

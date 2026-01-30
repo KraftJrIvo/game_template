@@ -24,4 +24,5 @@
 
 #define COLORS std::array<Color, 5>{ RED, GREEN, BLUE, GOLD, PINK }
 
-#define SPRITE_SPEED 1000.0f
+#define SPEED 1000.0f
+#define MAX_PLAYERS 4
