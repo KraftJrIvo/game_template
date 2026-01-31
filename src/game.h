@@ -62,13 +62,26 @@ struct GameState {
     } ga;
 
 #ifdef USE_STEAMWORKS
+    struct NetCallbacks {
+        DO_NOT_SERIALIZE
+        GameState* gs = nullptr;
+        void OnLobbyCreated(LobbyCreated_t* res, bool ioFailure);
+        void OnLobbyEnter(LobbyEnter_t* res, bool ioFailure);
+    };
+
     struct NetState {
         DO_NOT_SERIALIZE
         bool steamOk = false;
-        bool hasPeer = false;
-        SteamNetworkingIdentity peerIdentity;
-        size_t remoteIdx = SIZE_MAX;
+        bool inLobby = false;
+        bool lobbyPending = false;
+        CSteamID lobbyId;
+        std::array<CSteamID, MAX_PLAYERS> peers;
+        std::array<size_t, MAX_PLAYERS> peerPlayerIdx;
+        size_t peerCount = 0;
         double lastSendTime = 0.0;
+        NetCallbacks netCallbacks;
+        CCallResult<NetCallbacks, LobbyCreated_t>* lobbyCreated;
+        CCallResult<NetCallbacks, LobbyEnter_t>* lobbyEnter;
     } net;
 #endif
 };
