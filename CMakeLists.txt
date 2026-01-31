@@ -70,7 +70,7 @@ target_compile_options(raylib PUBLIC -DGRAPHICS_API_OPENGL_33)
 target_link_libraries(${GAME_TARGET} PUBLIC raylib)
 
 set(STEAMWORKS_SDK_DIR "" CACHE PATH "Path to Steamworks SDK root")
-if (USE_STEAMWORKS AND STEAMWORKS_SDK_DIR)
+if (STEAMWORKS_SDK_DIR)
   if (WIN32)
     set(STEAMWORKS_LIB "${STEAMWORKS_SDK_DIR}/redistributable_bin/win64/steam_api64.lib")
   endif()
