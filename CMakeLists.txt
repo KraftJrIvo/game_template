@@ -25,6 +25,7 @@ embed_resources("${GAME_SOURCE_DIR}/res" EMBEDDED_SOURCES GAME_RES EXCLUDE_EXTEN
 
 # TARGET
 set(GAME_SOURCE_FILES    
+  "src/net.hpp"
   "src/game.cpp"
   ${EMBEDDED_SOURCES}
 )
